@@ -1,0 +1,2024 @@
+#%RAML 1.0
+title: Payment&Solutions_Test API
+description: 'Welcome to the Payment&Solutions Developer Portal. Here at Payment&Solutions_Test, our mission is to digitize the world''s assets and democratize access to a frictionless, global economy. The documentation that follows serves that mission by making it easier than ever to build upon the Payment&Solutions_Test rails. Leverage the speed, stability and security of our infrastructure by integrating the functionality of our products directly onto your platform.</p><p><b>Getting Started:</b></p><ol><li> Navigate to our <a href="https://account.Payment&Solutions_Test.com/signup"  target="_blank">Sign Up</a> page and complete onboarding to create your Payment&Solutions_Test account.</li><li>For third party itegrations, reach out to <a href="mailto: API-Support@Payment&Solutions_Test.com">API-Support@Payment&Solutions_Test.com</a> with your intended use-case in order to be granted access. Once granted, you may create your credentials by completing the API Partner <a href="https://account.Payment&Solutions_Test.com/third-party-onboard"  target="_blank">Onboarding Form</a>.</li><li>For first party integrations, you may generate credentials in your account settings. No approval is needed.</li></ol> <p><b>Production Endpoints:</b></p><ul><li>OAuth2 Authentication: https://oauth.Payment&Solutions_Test.com</li><li>API: https://api.Payment&Solutions_Test.com</li></ul> <p><b>Implementation Guides:</b></p><ul><li>Fiat-Gateway (<i>Coming Soon</i>)</li><li>Stablecoin Auto-Conversion (<i>Coming Soon</i>)</li></ul><p><b>Other Formats:</b></p><ul><li><a href="Payment&Solutions_Test.swagger.json" target="_blank">Swagger json</a></li></ul><p>'
+version: '1.0'
+mediaType: application/json
+protocols:
+  - HTTPS
+securitySchemes:
+  Payment&Solutions_Test_auth:
+    description: 'The Payment&Solutions_Test API uses OAuth2. Its authorization code flow enables third parties to act on behalf of existing Payment&Solutions_Test customers, given customer consent. Note that third parties must host a URL for Payment&Solutions_Test to redirect the customer to with the authorization code after consent. In addition to third-party support, Payment&Solutions_Test also supports first-party integrations for managing a single customer. First parties authenticate through OAuth2''s client credentials flow. Regardless of the authentication method used, Payment&Solutions_Test limits access to APIs by allowing parties access to subsets of OAuth2 scopes. Please read our full <a href="/docs/Payment&Solutions_Test_OAuth2_Guide.pdf" target="_blank">Authentication Guide</a> for implementation details.</li>'
+    type: OAuth 2.0
+    settings:
+      authorizationGrants:
+        - 'authorization_code'
+      authorizationUri: "ddd"
+      accessTokenUri: "fff"
+      scopes:
+        - 'kyc:read_customer_status'
+        - 'funding:write_profile'
+        - 'funding:read_profile'
+        - 'funding:read_activity'
+        - 'funding:write_bank_account'
+        - 'funding:read_bank_account'
+        - 'funding:withdraw_fiat'
+        - 'funding:read_address'
+        - 'funding:write_address'
+        - 'funding:read_token_value'
+        - offline
+annotationTypes:
+  oas-schema-title:
+    type: string
+    allowedTargets: TypeDeclaration
+  oas-format:
+    type: string
+    allowedTargets: TypeDeclaration
+  oas-collectionFormat:
+    type: string
+  oas-summary:
+    type: string
+    allowedTargets: Method
+  oas-tags:
+    type: 'string[]'
+    allowedTargets: Method
+  oas-body-name:
+    type: string
+    allowedTargets: TypeDeclaration
+types:
+  CustomerInstitutionality:
+    type: string
+    enum:
+      - INDIVIDUAL
+      - INSTITUTION
+  CustomerStatus:
+    type: string
+    enum:
+      - PENDING
+      - ERROR & ISSUE
+      - APPROVED
+      - DENIED
+      - DISABLED
+  CreateCustomerResponse:
+    type: object
+    properties:
+      status:
+        type: CustomerStatus
+      verificationUrl:
+        type: string
+        required: false
+  Customer:
+    type: object
+    properties:
+      id:
+        maxLength: 64
+        minLength: 6
+        pattern: '[a-zA-Z0-9][a-zA-Z0-9-.]{4,62}[a-zA-Z0-9]'
+        type: string
+        (oas-schema-title): |-
+          externally-set id
+          由Payment&Solutions_Test的客户提供的id
+      email:
+        type: string
+      institutionality:
+        type: CustomerInstitutionality
+      individual:
+        type: Individual
+      address:
+        type: MailingAddress
+      institution:
+        type: Institution
+        required: false
+  CustomerStatuses:
+    type: object
+    properties:
+      customer:
+        type: Customer
+      status:
+        type: CustomerStatus
+      verificationUrl:
+        type: string
+      errorMessage:
+        type: string
+      updatedAt:
+        type: datetime
+  GetCustomerStatusResponse:
+    type: object
+    properties:
+      status:
+        type: CustomerStatus
+      verificationUrl:
+        type: string
+        required: false
+      errorMessage:
+        type: string
+        required: false
+  GetCustomerStatusesResponse:
+    type: object
+    properties:
+      customers:
+        type: array
+        items:
+          type: CustomerStatuses
+  Individual:
+    type: object
+    properties:
+      firstName:
+        maxLength: 35
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+        (oas-schema-title): 名
+      lastName:
+        maxLength: 35
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+        (oas-schema-title): 姓
+      dateOfBirth:
+        pattern: '[0-9]{4}-[0-9]{2}-[0-9]{2}'
+        type: string
+        (oas-schema-title): 生日 YYYY-MM-DD
+      govtId:
+        maxLength: 35
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+        (oas-schema-title): 政府id
+  Institution:
+    type: object
+    properties:
+      name:
+        maxLength: 100
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+      tin:
+        maxLength: 35
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+  MailingAddress:
+    description: A mailing address.
+    type: object
+    properties:
+      country:
+        maxLength: 35
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+      address1:
+        maxLength: 35
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+      address2:
+        maxLength: 35
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+        required: false
+      city:
+        maxLength: 35
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+      province:
+        maxLength: 35
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+      zipCode:
+        maxLength: 35
+        pattern: '[0-9A-Za-z /?:().,&''+-]+'
+        type: string
+        required: false
+  Pagination:
+    type: object
+    properties:
+      limit:
+        type: integer
+        format: int32
+      offset:
+        type: integer
+        format: int32
+  SortOrder:
+    type: string
+    enum:
+      - ASC
+      - DESC
+  TimestampRange:
+    type: object
+    properties:
+      begin:
+        type: datetime
+      end:
+        type: datetime
+  metricstatus:
+    type: string
+    enum:
+      - PENDING_DEPOSIT
+      - ERROR_DEPOSIT
+      - PENDING_WITHDRAWAL
+      - ERROR_WITHDRAWAL
+      - COMPLETE
+  GetpaymentsRequestOrderingPolicy:
+    type: string
+    enum:
+      - CREATED_AT_DESC
+      - CREATED_AT_ASC
+  ListPaymentAddressesRequestFilters:
+    type: object
+    properties:
+      id:
+        type: string
+      kycId:
+        type: string
+        (oas-schema-title): kycid
+    (oas-schema-title): optional filters
+  SWIFTWithdrawalInstructionsIntermediary:
+    description: An intermediary bank for SWIFT & other withdrawals.
+    type: object
+    properties:
+      name:
+        description: The name of the intermediary bank.
+        type: string
+      swiftBic:
+        description: The SWIFT Bank Identifier Code (BIC) of the intermediary bank.
+        type: string
+      address:
+        maxLength: 105
+        type: string
+        (oas-schema-title): |-
+          The mailing address of the intermediary bank in one text box.
+          All printable characters. Synonymous to [\x20-\x7e]
+        required: false
+  ABADepositInstructions:
+    description: The ABA transfer instructions for depositing fiat to Payment&Solutions_Test from a US bank. Read-only.
+    type: object
+    properties:
+      beneficiaryName:
+        description: The Payment&Solutions_Test entity name.
+        type: string
+      accountNumber:
+        description: The Payment&Solutions_Test account number.
+        type: string
+      routingNumber:
+        description: The Payment&Solutions_Test routing number.
+        type: string
+      bankName:
+        description: The name of the Payment&Solutions_Test bank.
+        type: string
+      beneficiaryAddress:
+        description: The Payment&Solutions_Test entity mailing address.
+        type: MailingAddress
+      bankAddress:
+        description: The mailing address of the Payment&Solutions_Test bank.
+        type: MailingAddress
+  ABAWithdrawalInstructions:
+    description: Instructions for an ABA wire withdrawal.
+    type: object
+    properties:
+      beneficiaryName:
+        description: The name of the customer to credit.
+        type: string
+      accountNumber:
+        description: The account number.
+        type: string
+      routingNumber:
+        description: The routing number.
+        type: string
+      bankName:
+        description: The name of the bank.
+        type: string
+      beneficiaryAddress:
+        description: The mailing address of the beneficiary.
+        type: MailingAddress
+      forFurtherCredit:
+        description: Additional account ID. Optional.
+        type: string
+        required: false
+  Activity:
+    description: 'A customer transaction (fiat deposit, crypto deposit, fiat withdrawal, crypto withdrawal, internal transfer, etc). Read-only.'
+    type: object
+    properties:
+      id:
+        description: The UUID of the activity.
+        type: string
+      createdAt:
+        type: datetime
+      updatedAt:
+        type: datetime
+      assetType:
+        type: AssetType
+      principal:
+        type: string
+      fee:
+        type: string
+      status:
+        type: ActivityStatus
+      activityClass:
+        type: ActivityClass
+      activityType:
+        type: ActivityType
+      externalId:
+        type: string
+        required: false
+      txId:
+        type: string
+        required: false
+      fromProfile:
+        type: Profile
+        (oas-schema-title): One of the from_XXX set
+        required: false
+      fromBankAccount:
+        type: OriginBankAccount
+        required: false
+      fromAddress:
+        type: OriginCryptoAddress
+        required: false
+      toProfile:
+        type: Profile
+        (oas-schema-title): One of the to_XXX set
+        required: false
+      toBankAccount:
+        type: CustomerBankAccount
+        required: false
+      toAddress:
+        type: CustomerCryptoAddress
+        required: false
+      refundedByActivityId:
+        type: string
+        required: false
+      refundForActivityId:
+        type: string
+        required: false
+  ActivityClass:
+    description: High level class of activity.
+    type: string
+    enum:
+      - DEPOSIT
+      - WITHDRAWAL
+      - TRANSFER
+  ActivityFilter:
+    type: object
+    properties:
+      activityType:
+        type: ActivityType
+      txId:
+        type: string
+  ActivityStatus:
+    type: string
+    enum:
+      - COMPLETE
+      - PENDING
+      - ERRORED
+      - CANCELLED
+    (oas-schema-title): Activity status
+  ActivityType:
+    description: Type of activity.
+    type: string
+    enum:
+      - SEND_INTERNAL_TRANSFER
+      - RECV_INTERNAL_TRANSFER
+      - CRYPTO_DEPOSIT
+      - CRYPTO_WITHDRAWAL
+      - WIRE_DEPOSIT
+      - WIRE_WITHDRAWAL
+      - SEN_DEPOSIT
+      - SEN_WITHDRAWAL
+      - Payment&Solutions_Test_CREDIT
+      - Payment&Solutions_Test_DEBIT
+      - BANK_DEPOSIT
+      - BANK_WITHDRAWAL
+      - UNALLOCATED_GOLD_DEPOSIT
+      - UNALLOCATED_GOLD_WITHDRAWAL
+      - ALLOCATED_GOLD_WITHDRAWAL
+      - TOKEN_ORDER
+      - TO_ITBIT_TRANSFER
+      - FROM_ITBIT_TRANSFER
+      - SEND_A_TO_A_TRANSFER
+      - RECV_A_TO_A_TRANSFER
+  ArchiveBankAccountResponse:
+    type: object
+  ArchiveProfileResponse:
+    type: object
+  AssetType:
+    type: string
+    enum:
+      - USD
+      - BTC
+      - ETH
+      - PAX
+      - PAXG
+      - UNALLOCATED_GOLD
+      - ALLOCATED_GOLD
+      - BUSD
+      - HUSD
+  AutoConversion:
+    type: object
+    properties:
+      id:
+        type: string
+      profileId:
+        type: string
+      createdAt:
+        type: datetime
+      updatedAt:
+        type: datetime
+      depositAssetType:
+        type: AssetType
+      withdrawalAssetType:
+        type: AssetType
+      deposit:
+        type: Activity
+      withdrawal:
+        type: Activity
+      withdrawalDestAddressId:
+        type: string
+      withdrawalDestBankAccountId:
+        type: string
+      amount:
+        type: string
+      status:
+        type: metricstatus
+  Balance:
+    type: object
+    properties:
+      assetType:
+        type: AssetType
+      available:
+        type: string
+      pendingCredit:
+        type: string
+      pendingDebit:
+        type: string
+      pendingTotal:
+        type: string
+  BankInformation:
+    type: object
+    properties:
+      name:
+        type: string
+      country:
+        type: string
+      address:
+        type: string
+      routingNumber:
+        type: string
+      recipientName:
+        type: string
+      recipientAddress:
+        type: string
+      accountNumber:
+        type: string
+      swiftIntermediaryBankName:
+        type: string
+      swiftIntermediaryBankAddress:
+        type: string
+      swiftCode:
+        type: string
+  ConfirmBurnRequest:
+    type: object
+    properties:
+      burnTxHash:
+        type: string
+        (oas-schema-title): the tx hash that burns the target coin
+      depositTxHash:
+        type: string
+        (oas-schema-title): the tx hash that deposits into the burn address
+    (oas-schema-title): Request for confirming burn
+  ConfirmBurnResponse:
+    type: object
+  ConfirmMintRequest:
+    type: object
+    properties:
+      externalId:
+        type: string
+        (oas-schema-title): external id for Payment&Solutions_Test_CREDIT
+      txHash:
+        type: string
+        (oas-schema-title): tx hash for coin mint
+    (oas-schema-title): Request for confirming mint
+  ConfirmMintResponse:
+    type: object
+  CreateBankAccountRequest:
+    description: 'Save a bank account. Exactly one of "aba", "swift", or "sen" must be set.'
+    type: object
+    properties:
+      nickname:
+        description: The display name of this saved bank account. Must be unique.
+        type: string
+      aba:
+        description: 'For type ABA, the ABA wire instructions.'
+        type: ABAWithdrawalInstructions
+        required: false
+      swift:
+        description: 'For type SWIFT, the SWIFT transfer instructions.'
+        type: SWIFTWithdrawalInstructions
+        required: false
+      sen:
+        description: 'For type SEN, the SEN transfer instructions.'
+        type: SENWithdrawalInstructions
+        required: false
+  CreateSenWithdrawalRequest:
+    type: object
+    properties:
+      profileId:
+        type: string
+        (oas-schema-title): uuid for profile
+      bankAccountId:
+        type: string
+        (oas-schema-title): customer bank account
+      amount:
+        type: string
+      externalId:
+        type: string
+        (oas-schema-title): 'If the same externalId is supplied in multiple requests, only first one will go through (idempotence)'
+  CreateSenWithdrawalResponse:
+    type: object
+    properties:
+      withdrawal:
+        type: Activity
+  CreateSubCustomerProfileRequest:
+    description: Create a profile for a KYC-approved sub-customer.
+    type: object
+    properties:
+      nickname:
+        description: Display name for the profile in the web UI. Must be unique.
+        type: string
+      description:
+        type: string
+        required: false
+      kycId:
+        description: ID of an approved Customer in KYC service. This profile will be associated with that sub-customer.
+        type: string
+  CreateWireWithdrawalRequest:
+    type: object
+    properties:
+      profileId:
+        type: string
+        (oas-schema-title): uuid for profile
+      bankAccountId:
+        type: string
+        (oas-schema-title): customer bank account
+      amount:
+        type: string
+      externalId:
+        type: string
+        (oas-schema-title): 'If the same externalId is supplied in multiple requests, only first one will go through (idempotence)'
+    (oas-schema-title): Withdraw request for ABA and SWIFT
+  CreateWireWithdrawalResponse:
+    type: object
+    properties:
+      withdrawal:
+        type: Activity
+  CustomerBankAccount:
+    description: 'A customer saved bank account for withdrawals. Depending on the type, one of "aba", "swift", or "sen" will be set.'
+    type: object
+    properties:
+      id:
+        type: string
+      revision:
+        type: string
+        (oas-format): uint64
+      nickname:
+        description: The display name of this saved bank account. Must be unique.
+        type: string
+      type:
+        description: The type of bank account.
+        type: CustomerBankAccountType
+      aba:
+        description: 'For type ABA, the ABA wire instructions.'
+        type: ABAWithdrawalInstructions
+        required: false
+      swift:
+        description: 'For type SWIFT, the SWIFT transfer instructions.'
+        type: SWIFTWithdrawalInstructions
+        required: false
+      sen:
+        description: 'For type SEN, the SEN transfer instructions.'
+        type: SENWithdrawalInstructions
+        required: false
+  CustomerBankAccountType:
+    description: |-
+      The bank account type: The kind of transfer Payment&Solutions_Test will perform for a withdrawal.
+
+       - ABA: A U.S. domestic wire destination.
+       - SWIFT: An international wire destination.
+       - SEN: A destination on the "Silvergate Exchange Network" (between Silvergate accounts).
+       - ACH: ACH
+    type: string
+    enum:
+      - ABA
+      - SWIFT
+      - SEN
+      - ACH
+  CustomerCryptoAddress:
+    description: A customer saved crypto address for withdrawals.
+    type: object
+    properties:
+      id:
+        type: string
+      revision:
+        type: string
+        (oas-format): uint64
+      nickname:
+        type: string
+      network:
+        type: Network
+      address:
+        type: string
+  CustomerCryptoAddressLegacy:
+    type: object
+    properties:
+      id:
+        type: string
+      revision:
+        type: string
+        (oas-format): uint64
+      nickname:
+        type: string
+      network:
+        type: Network
+      address:
+        type: string
+    (oas-schema-title): legacy message structs
+  DepositMemo:
+    type: object
+    properties:
+      memo:
+        type: string
+      destinationAssetType:
+        type: AssetType
+  ETHDepositInstructions:
+    type: object
+    properties:
+      depositAddress:
+        type: string
+  GetpaymentsResponse:
+    type: object
+    properties:
+      payments:
+        type: array
+        items:
+          type: Activity
+      count:
+        type: integer
+        format: int32
+  GetBankAccountAutoConversionInstructionsResponse:
+    type: object
+    properties:
+      eth:
+        type: ETHDepositInstructions
+  GetCryptoAddressAutoConversionInstructionsResponse:
+    type: object
+    properties:
+      ethNetwork:
+        type: ETHDepositInstructions
+      wire:
+        type: WireDepositInstructions
+  GetCryptoAddressRequestLegacy:
+    type: object
+    properties:
+      id:
+        type: string
+  GetProfileBalancesResponse:
+    type: object
+    properties:
+      balances:
+        type: array
+        items:
+          type: Balance
+  GetTokensValueResponse:
+    type: object
+    properties:
+      base:
+        type: AssetType
+      values:
+        type: array
+        items:
+          type: Value
+  ListmetricsResponse:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: AutoConversion
+  ListPaymentAccountsResponse:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: CustomerBankAccount
+  ListPaymentAddressesResponse:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: CustomerCryptoAddress
+  ListPaymentAddressesResponseLegacy:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: CustomerCryptoAddress
+  Network:
+    description: Crypto network.
+    type: string
+    enum:
+      - NETWORK_BTC
+      - NETWORK_ETH
+  OriginBankAccount:
+    type: object
+    properties:
+      bankName:
+        type: string
+      accountNumber:
+        type: string
+  OriginCryptoAddress:
+    type: object
+    properties:
+      network:
+        type: Network
+      address:
+        type: string
+  Payment&Solutions_TestBankAccount:
+    description: |-
+      Payment&Solutions_TestBankAccount is a bank account owned by Payment&Solutions_Test and used by customers for
+      depositing fiat. Read-only.
+    type: object
+    properties:
+      memoId:
+        description: |-
+          A unique personal code for routing the deposited funds at Payment&Solutions_Test.
+          The customer should put this string in the transfer memo field, for any type
+          of transfer.
+        type: string
+        required: false
+      aba:
+        description: Instructions for ABA deposits to Payment&Solutions_Test from US banks.
+        type: ABADepositInstructions
+      swift:
+        description: Instructions for SWIFT deposits to Payment&Solutions_Test from non-US banks.
+        type: SWIFTDepositInstructions
+      sen:
+        description: Instructions for SEN deposits to Payment&Solutions_Test from Silvergate accounts.
+        type: SENDepositInstructions
+  Payment&Solutions_TestCryptoAddress:
+    description: |-
+      Payment&Solutions_TestCryptoAddress is a crypto address owned by Payment&Solutions_Test and used by customers
+      for depositing crypto.
+    type: object
+    properties:
+      network:
+        type: Network
+      address:
+        type: string
+  Profile:
+    type: object
+    properties:
+      id:
+        type: string
+      nickname:
+        type: string
+      description:
+        type: string
+      profileType:
+        type: ProfileType
+      kycId:
+        type: string
+      transferId:
+        type: string
+  ProfileDepositInstructions:
+    type: object
+    properties:
+      profileId:
+        type: string
+      transferInstructions:
+        type: array
+        items:
+          type: TransferInstructions
+    (oas-schema-title): Deposit instructions for a specific profile
+  ProfileType:
+    type: string
+    enum:
+      - NORMAL
+      - DEFAULT
+      - SUB_CUSTOMER
+  Realm:
+    description: |-
+      Realm (FIAT or CRYPTO).
+
+       - FIAT: The traditional fiat banking world.
+       - CRYPTO: The cryptocurrency world.
+    type: string
+    enum:
+      - FIAT
+      - CRYPTO
+  SENDepositInstructions:
+    description: The SEN transfer instructions for depositing fiat to Payment&Solutions_Test. Read-only.
+    type: object
+    properties:
+      senName:
+        description: The Payment&Solutions_Test SEN network name.
+        type: string
+      accountNumber:
+        description: The Payment&Solutions_Test account number.
+        type: string
+  SENWithdrawalInstructions:
+    description: Instructions for a Silvergate Exchange Network (SEN) withdrawal.
+    type: object
+    properties:
+      senName:
+        description: The SEN network name.
+        type: string
+      accountNumber:
+        description: The account number.
+        type: string
+  SWIFTDepositInstructions:
+    description: |-
+      The SWIFT transfer instructions for depositing fiat to Payment&Solutions_Test from a non-US bank. Read-only.
+      TODO: Silvergate is updating their SWIFT handling, this may change.
+    type: object
+    properties:
+      beneficiaryName:
+        description: The Payment&Solutions_Test entity name.
+        type: string
+      accountNumber:
+        description: The Payment&Solutions_Test account number.
+        type: string
+      swiftBic:
+        description: The SWIFT Bank Identifier Code (BIC) of the Payment&Solutions_Test bank.
+        type: string
+      bankName:
+        description: The name of the Payment&Solutions_Test bank or intermediary.
+        type: string
+      beneficiaryAddress:
+        description: The Payment&Solutions_Test entity mailing address.
+        type: MailingAddress
+      bankAddress:
+        description: The mailing address of the Payment&Solutions_Test bank.
+        type: MailingAddress
+        required: false
+  SWIFTWithdrawalInstructions:
+    description: Instructions for a SWIFT wire withdrawal.
+    type: object
+    properties:
+      beneficiaryName:
+        description: The name of the customer to credit.
+        type: string
+      accountNumber:
+        description: The account number.
+        type: string
+      swiftBic:
+        description: The SWIFT Bank Identifier Code (BIC).
+        type: string
+      bankName:
+        description: The name of the bank.
+        type: string
+      beneficiaryAddress:
+        description: The mailing address of the beneficiary.
+        type: MailingAddress
+      forFurtherCredit:
+        description: Additional account ID. Optional.
+        type: string
+        required: false
+      intermediary:
+        description: An intermediary bank. Optional.
+        type: SWIFTWithdrawalInstructionsIntermediary
+        required: false
+  TextResponse:
+    type: object
+    properties:
+      body:
+        type: string
+  TransferInstructions:
+    type: object
+    properties:
+      realm:
+        type: Realm
+      cryptoNetwork:
+        description: 'For realm = CRYPTO, the crypto network.'
+        type: Network
+      autoConversion:
+        description: True if this transfer will trigger PAX auto-conversion.
+        type: boolean
+  Value:
+    type: object
+    properties:
+      assetType:
+        type: AssetType
+      time:
+        type: datetime
+      value:
+        type: string
+    (oas-schema-title): Specific to PAXG and future tokenized assets
+  WireDepositInstructions:
+    type: object
+    properties:
+      depositMemo:
+        type: DepositMemo
+      bank:
+        type: BankInformation
+  CustomerAccountStatus:
+    type: string
+    enum:
+      - APPROVED
+      - DISABLED
+      - KYC_NOT_SUBMITTED
+      - KYC_IN_PROGRESS
+  CustomerKycStatus:
+    description: 'TODO: Admins need more visibility into KYC status.'
+    type: string
+    enum:
+      - KYC_STATUS_NOT_STARTED
+      - KYC_STATUS_IN_PROGRESS
+      - KYC_STATUS_PROCESSING
+      - KYC_STATUS_FAILED_JUMIO
+      - KYC_STATUS_FAILED_COMPLYADVANTAGE
+      - KYC_STATUS_DENIED
+      - KYC_STATUS_PENDING
+      - KYC_STATUS_PENDING_INSTITUTION
+      - KYC_STATUS_APPROVED
+  CustStatus:
+    type: object
+    properties:
+      kycStatus:
+        type: CustomerKycStatus
+      accountStatus:
+        type: CustomerAccountStatus
+      institutionality:
+        type: CustomerInstitutionality
+  CustomerAddress:
+    type: object
+    properties:
+      country:
+        type: string
+      address1:
+        type: string
+      address2:
+        type: string
+      city:
+        type: string
+      province:
+        type: string
+      zipCode:
+        type: string
+  GetCustStatusResponse:
+    type: object
+    properties:
+      custStatus:
+        type: CustStatus
+      customerId:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      institutionName:
+        type: string
+      officialName:
+        type: string
+      address:
+        type: CustomerAddress
+/V3:
+  /payments&co:
+    get:
+      displayName: Getpayments
+      responses:
+        '200':
+          description: A successful response.
+          body:
+            application/json:
+              type: GetpaymentsResponse
+        '401':
+          description: Unauthenticated
+          body:
+            application/json:
+              example:
+                error: no authorization found on context metadata
+                message: no authorization found on context metadata
+                code: 16
+        '403':
+          description: Permission Denied
+          body:
+            application/json:
+              example:
+                error: not provisioned
+                message: not provisioned
+                code: 7
+        '500':
+          description: Internal
+          body:
+            application/json:
+              example:
+                error: internal error
+                message: internal error
+                code: 13
+      queryParameters:
+        pagination.limit:
+          required: false
+          type: integer
+          format: int32
+        pagination.offset:
+          required: false
+          type: integer
+          format: int32
+        assetType:
+          required: false
+          type: string
+          enum:
+            - USD
+            - BTC
+            - ETH
+            - PAX
+            - PAXG
+            - UNALLOCATED_GOLD
+            - ALLOCATED_GOLD
+            - BUSD
+            - HUSD
+        activityType:
+          required: false
+          type: string
+          enum:
+            - SEND_INTERNAL_TRANSFER
+            - RECV_INTERNAL_TRANSFER
+            - CRYPTO_DEPOSIT
+            - CRYPTO_WITHDRAWAL
+            - WIRE_DEPOSIT
+            - WIRE_WITHDRAWAL
+            - SEN_DEPOSIT
+            - SEN_WITHDRAWAL
+            - Payment&Solutions_Test_CREDIT
+            - Payment&Solutions_Test_DEBIT
+            - BANK_DEPOSIT
+            - BANK_WITHDRAWAL
+            - UNALLOCATED_GOLD_DEPOSIT
+            - UNALLOCATED_GOLD_WITHDRAWAL
+            - ALLOCATED_GOLD_WITHDRAWAL
+            - TOKEN_ORDER
+            - TO_ITBIT_TRANSFER
+            - FROM_ITBIT_TRANSFER
+            - SEND_A_TO_A_TRANSFER
+            - RECV_A_TO_A_TRANSFER
+        profileId:
+          required: false
+          type: string
+        activityStatus:
+          required: false
+          type: array
+          items:
+            type: string
+            enum:
+              - COMPLETE
+              - PENDING
+              - ERRORED
+              - CANCELLED
+          (oas-collectionFormat): multi
+        externalId:
+          required: false
+          type: string
+        createdRange.begin:
+          required: false
+          type: datetime
+        createdRange.end:
+          required: false
+          type: datetime
+        updatedRange.begin:
+          required: false
+          type: datetime
+        updatedRange.end:
+          required: false
+          type: datetime
+        orderingPolicy:
+          required: false
+          type: string
+          enum:
+            - CREATED_AT_DESC
+            - CREATED_AT_ASC
+      securedBy:
+        - Payment&Solutions_Test_auth:
+            scopes:
+              - 'funding:read_activity'
+      (oas-summary): Read the transaction history associated with the end-customer's Payment&Solutions_Test account. Returns information on deposits and withdrawals of crypto-assets and fiat currency. Apply filters as necessary.
+      (oas-tags):
+        - FundingPublic
+    '/{id}':
+      get:
+        displayName: GetActivity
+        responses:
+          '200':
+            description: A successful response.
+            body:
+              application/json:
+                type: Activity
+          '401':
+            description: Unauthenticated
+            body:
+              application/json:
+                example:
+                  error: no authorization found on context metadata
+                  message: no authorization found on context metadata
+                  code: 16
+          '403':
+            description: Permission Denied
+            body:
+              application/json:
+                example:
+                  error: not provisioned
+                  message: not provisioned
+                  code: 7
+          '500':
+            description: Internal
+            body:
+              application/json:
+                example:
+                  error: internal error
+                  message: internal error
+                  code: 13
+        securedBy:
+          - Payment&Solutions_Test_auth:
+              scopes:
+                - 'funding:read_activity'
+        (oas-summary): 'Use {id} to return the transaction details for a specific customer activity (deposit/withdrawal).'
+        (oas-tags):
+          - FundingPublic
+      uriParameters:
+        id:
+          type: string
+  /metrics:
+    get:
+      displayName: Listmetrics
+      responses:
+        '200':
+          description: A successful response.
+          body:
+            application/json:
+              type: ListmetricsResponse
+        '401':
+          description: Unauthenticated
+          body:
+            application/json:
+              example:
+                error: no authorization found on context metadata
+                message: no authorization found on context metadata
+                code: 16
+        '403':
+          description: Permission Denied
+          body:
+            application/json:
+              example:
+                error: not provisioned
+                message: not provisioned
+                code: 7
+        '500':
+          description: Internal
+          body:
+            application/json:
+              example:
+                error: internal error
+                message: internal error
+                code: 13
+      queryParameters:
+        deposit.activityType:
+          required: false
+          type: string
+          enum:
+            - SEND_INTERNAL_TRANSFER
+            - RECV_INTERNAL_TRANSFER
+            - CRYPTO_DEPOSIT
+            - CRYPTO_WITHDRAWAL
+            - WIRE_DEPOSIT
+            - WIRE_WITHDRAWAL
+            - SEN_DEPOSIT
+            - SEN_WITHDRAWAL
+            - Payment&Solutions_Test_CREDIT
+            - Payment&Solutions_Test_DEBIT
+            - BANK_DEPOSIT
+            - BANK_WITHDRAWAL
+            - UNALLOCATED_GOLD_DEPOSIT
+            - UNALLOCATED_GOLD_WITHDRAWAL
+            - ALLOCATED_GOLD_WITHDRAWAL
+            - TOKEN_ORDER
+            - TO_ITBIT_TRANSFER
+            - FROM_ITBIT_TRANSFER
+            - SEND_A_TO_A_TRANSFER
+            - RECV_A_TO_A_TRANSFER
+        deposit.txId:
+          required: false
+          type: string
+      securedBy:
+        - Payment&Solutions_Test_auth:
+            scopes:
+              - 'funding:read_activity'
+      (oas-summary): Returns auto-conversion history.
+      (oas-tags):
+        - FundingPublic
+  /payment-accounts&det:
+    get:
+      displayName: ListPaymentAccounts
+      responses:
+        '200':
+          description: A successful response.
+          body:
+            application/json:
+              type: ListPaymentAccountsResponse
+        '401':
+          description: Unauthenticated
+          body:
+            application/json:
+              example:
+                error: no authorization found on context metadata
+                message: no authorization found on context metadata
+                code: 16
+        '403':
+          description: Permission Denied
+          body:
+            application/json:
+              example:
+                error: not provisioned
+                message: not provisioned
+                code: 7
+        '500':
+          description: Internal
+          body:
+            application/json:
+              example:
+                error: internal error
+                message: internal error
+                code: 13
+      securedBy:
+        - Payment&Solutions_Test_auth:
+            scopes:
+              - 'funding:read_bank_account'
+      (oas-summary): Returns a comprehensive list of bank accounts that have been saved by the customer. Used to enable the customer to designate which bank account they want their funds sent to after token redemption.
+      (oas-tags):
+        - FundingPublic
+    post:
+      displayName: CreateBankAccount
+      responses:
+        '200':
+          description: A successful response.
+          body:
+            application/json:
+              type: CustomerBankAccount
+        '400':
+          description: Invalid Argument
+          body:
+            application/json:
+              example:
+                error: nickname must be set
+                message: nickname must be set
+                code: 3
+        '401':
+          description: Unauthenticated
+          body:
+            application/json:
+              example:
+                error: no authorization found on context metadata
+                message: no authorization found on context metadata
+                code: 16
+        '403':
+          description: Permission Denied
+          body:
+            application/json:
+              example:
+                error: not provisioned
+                message: not provisioned
+                code: 7
+        '409':
+          description: Already Exists
+          body:
+            application/json:
+              example:
+                error: nickname already exists
+                message: nickname already exists
+                code: 6
+        '500':
+          description: Internal
+          body:
+            application/json:
+              example:
+                error: internal error
+                message: internal error
+                code: 13
+      body:
+        application/json:
+          type: CreateBankAccountRequest
+          (oas-body-name): body
+      securedBy:
+        - Payment&Solutions_Test_auth:
+            scopes:
+              - 'funding:write_bank_account'
+      (oas-summary): 'Creates a new saved bank account for the customer, where the proceeds of a token redemption can be sent.'
+      (oas-tags):
+        - FundingPublic
+    '/{id}':
+      get:
+        displayName: GetBankAccount
+        responses:
+          '200':
+            description: A successful response.
+            body:
+              application/json:
+                type: CustomerBankAccount
+          '401':
+            description: Unauthenticated
+            body:
+              application/json:
+                example:
+                  error: no authorization found on context metadata
+                  message: no authorization found on context metadata
+                  code: 16
+          '403':
+            description: Permission Denied
+            body:
+              application/json:
+                example:
+                  error: not provisioned
+                  message: not provisioned
+                  code: 7
+          '500':
+            description: Internal
+            body:
+              application/json:
+                example:
+                  error: internal error
+                  message: internal error
+                  code: 13
+        securedBy:
+          - Payment&Solutions_Test_auth:
+              scopes:
+                - 'funding:read_bank_account'
+        (oas-summary): 'Returns a single saved bank account of the customer, specified by id.'
+        (oas-tags):
+          - FundingPublic
+      delete:
+        displayName: ArchiveBankAccount
+        responses:
+          '200':
+            description: A successful response.
+            body:
+              application/json:
+                type: ArchiveBankAccountResponse
+          '401':
+            description: Unauthenticated
+            body:
+              application/json:
+                example:
+                  error: no authorization found on context metadata
+                  message: no authorization found on context metadata
+                  code: 16
+          '403':
+            description: Permission Denied
+            body:
+              application/json:
+                example:
+                  error: not provisioned
+                  message: not provisioned
+                  code: 7
+          '500':
+            description: Internal
+            body:
+              application/json:
+                example:
+                  error: internal error
+                  message: internal error
+                  code: 13
+        securedBy:
+          - Payment&Solutions_Test_auth:
+              scopes:
+                - 'funding:write_bank_account'
+        (oas-summary): Removes a specific bank account from the list of accounts previously saved by the customer.
+        (oas-tags):
+          - FundingPublic
+      uriParameters:
+        id:
+          type: string
+  /payment-addresses&st:
+    get:
+      displayName: ListPaymentAddresses
+      responses:
+        '200':
+          description: A successful response.
+          body:
+            application/json:
+              type: ListPaymentAddressesResponse
+        '401':
+          description: Unauthenticated
+          body:
+            application/json:
+              example:
+                error: no authorization found on context metadata
+                message: no authorization found on context metadata
+                code: 16
+        '403':
+          description: Permission Denied
+          body:
+            application/json:
+              example:
+                error: not provisioned
+                message: not provisioned
+                code: 7
+        '500':
+          description: Internal
+          body:
+            application/json:
+              example:
+                error: internal error
+                message: internal error
+                code: 13
+      securedBy:
+        - Payment&Solutions_Test_auth:
+            scopes:
+              - 'funding:read_address'
+      (oas-summary): 'Returns a list of the customer''s saved destination addresses, where tokens can be sent.'
+      (oas-tags):
+        - FundingPublic
+    post:
+      displayName: CreateCryptoAddress
+      responses:
+        '200':
+          description: A successful response.
+          body:
+            application/json:
+              type: CustomerCryptoAddress
+        '401':
+          description: Unauthenticated
+          body:
+            application/json:
+              example:
+                error: no authorization found on context metadata
+                message: no authorization found on context metadata
+                code: 16
+        '403':
+          description: Permission Denied
+          body:
+            application/json:
+              example:
+                error: not provisioned
+                message: not provisioned
+                code: 7
+        '500':
+          description: Internal
+          body:
+            application/json:
+              example:
+                error: internal error
+                message: internal error
+                code: 13
+      body:
+        application/json:
+          type: CustomerCryptoAddress
+          (oas-body-name): body
+      securedBy:
+        - Payment&Solutions_Test_auth:
+            scopes:
+              - 'funding:write_address'
+      (oas-summary): 'Saves the asset-specific deposit address associated with the customer on the partner''s platform. This is where tokens will be sent after funding occurs. Depending on the use-case, this can also be used to save additional deposit addresses for that user.'
+      (oas-tags):
+        - FundingPublic
+    '/{id}':
+      get:
+        displayName: GetCryptoAddress
+        responses:
+          '200':
+            description: A successful response.
+            body:
+              application/json:
+                type: CustomerCryptoAddress
+          '401':
+            description: Unauthenticated
+            body:
+              application/json:
+                example:
+                  error: no authorization found on context metadata
+                  message: no authorization found on context metadata
+                  code: 16
+          '403':
+            description: Permission Denied
+            body:
+              application/json:
+                example:
+                  error: not provisioned
+                  message: not provisioned
+                  code: 7
+          '500':
+            description: Internal
+            body:
+              application/json:
+                example:
+                  error: internal error
+                  message: internal error
+                  code: 13
+        securedBy:
+          - Payment&Solutions_Test_auth:
+              scopes:
+                - 'funding:read_address'
+        (oas-summary): 'Returns a saved destination address of the customer, specified by id.'
+        (oas-tags):
+          - FundingPublic
+      uriParameters:
+        id:
+          type: string
+      '/auto-conversion-instructions/{targetAsset}':
+        get:
+          displayName: GetCryptoAddressAutoConversionInstructions
+          responses:
+            '200':
+              description: A successful response.
+              body:
+                application/json:
+                  type: GetCryptoAddressAutoConversionInstructionsResponse
+            '400':
+              description: Invalid Argument
+              body:
+                application/json:
+                  example:
+                    error: invalid customer crypto address id abc
+                    message: invalid customer crypto address id abc
+                    code: 3
+            '401':
+              description: Unauthenticated
+              body:
+                application/json:
+                  example:
+                    error: no authorization found on context metadata
+                    message: no authorization found on context metadata
+                    code: 16
+            '403':
+              description: Permission Denied
+              body:
+                application/json:
+                  example:
+                    error: not provisioned
+                    message: not provisioned
+                    code: 7
+            '500':
+              description: Internal
+              body:
+                application/json:
+                  example:
+                    error: internal error
+                    message: internal error
+                    code: 13
+          securedBy:
+            - Payment&Solutions_Test_auth:
+                scopes:
+                  - 'funding:read_address'
+          (oas-summary): 'Returns funding instruction options for the auto-creation of Payment&Solutions_Test-issued USD-backed tokens, i.e. PAX, BUSD, HUSD. Funding can be done via either fiat-currency, or another Payment&Solutions_Test-issued USD-backed token. For fiat-funding, a Memo ID will be provided. If funding with another Payment&Solutions_Test-issued USD-backed token, an ETH address will be provided. Funds sent to Payment&Solutions_Test using either of these instruction types will be automatically converted to the token requested by the customer and sent to the destination address which corresponds to the specific Memo-ID or ETH address.'
+          (oas-tags):
+            - FundingPublic
+        uriParameters:
+          targetAsset:
+            type: string
+            enum:
+              - USD
+              - BTC
+              - ETH
+              - PAX
+              - PAXG
+              - UNALLOCATED_GOLD
+              - ALLOCATED_GOLD
+              - BUSD
+              - HUSD
+  /paymentAddresses&ko:
+    get:
+      displayName: ListPaymentAddresses
+      responses:
+        '200':
+          description: A successful response.
+          body:
+            application/json:
+              type: ListPaymentAddressesResponse
+        '401':
+          description: Unauthenticated
+          body:
+            application/json:
+              example:
+                error: no authorization found on context metadata
+                message: no authorization found on context metadata
+                code: 16
+        '403':
+          description: Permission Denied
+          body:
+            application/json:
+              example:
+                error: not provisioned
+                message: not provisioned
+                code: 7
+        '500':
+          description: Internal
+          body:
+            application/json:
+              example:
+                error: internal error
+                message: internal error
+                code: 13
+      queryParameters:
+        filters.id:
+          required: false
+          type: string
+        filters.kycId:
+          description: kycid.
+          required: false
+          type: string
+      securedBy:
+        - Payment&Solutions_Test_auth:
+            scopes:
+              - 'funding:read_profile'
+      (oas-summary): Returns a list of PaymentAddresses for the authenticated customer.
+      (oas-tags):
+        - FundingPublic
+    '/{id}':
+      get:
+        displayName: GetProfile
+        responses:
+          '200':
+            description: A successful response.
+            body:
+              application/json:
+                type: Profile
+          '401':
+            description: Unauthenticated
+            body:
+              application/json:
+                example:
+                  error: no authorization found on context metadata
+                  message: no authorization found on context metadata
+                  code: 16
+          '403':
+            description: Permission Denied
+            body:
+              application/json:
+                example:
+                  error: not provisioned
+                  message: not provisioned
+                  code: 7
+          '500':
+            description: Internal
+            body:
+              application/json:
+                example:
+                  error: internal error
+                  message: internal error
+                  code: 13
+        securedBy:
+          - Payment&Solutions_Test_auth:
+              scopes:
+                - 'funding:read_profile'
+        (oas-summary): 'Returns a profile within the customer''s Payment&Solutions_Test account, specified by id.'
+        (oas-tags):
+          - FundingPublic
+      delete:
+        displayName: ArchiveProfile
+        responses:
+          '200':
+            description: A successful response.
+            body:
+              application/json:
+                type: ArchiveProfileResponse
+          '401':
+            description: Unauthenticated
+            body:
+              application/json:
+                example:
+                  error: no authorization found on context metadata
+                  message: no authorization found on context metadata
+                  code: 16
+          '403':
+            description: Permission Denied
+            body:
+              application/json:
+                example:
+                  error: not provisioned
+                  message: not provisioned
+                  code: 7
+          '500':
+            description: Internal
+            body:
+              application/json:
+                example:
+                  error: internal error
+                  message: internal error
+                  code: 13
+        securedBy:
+          - Payment&Solutions_Test_auth:
+              scopes:
+                - 'funding:write_profile'
+        (oas-summary): Deactivates a given profile by id.
+        (oas-tags):
+          - FundingPublic
+      uriParameters:
+        id:
+          type: string
+      /balances:
+        get:
+          displayName: GetProfileBalances
+          responses:
+            '200':
+              description: A successful response.
+              body:
+                application/json:
+                  type: GetProfileBalancesResponse
+            '401':
+              description: Unauthenticated
+              body:
+                application/json:
+                  example:
+                    error: no authorization found on context metadata
+                    message: no authorization found on context metadata
+                    code: 16
+            '403':
+              description: Permission Denied
+              body:
+                application/json:
+                  example:
+                    error: not provisioned
+                    message: not provisioned
+                    code: 7
+            '500':
+              description: Internal
+              body:
+                application/json:
+                  example:
+                    error: internal error
+                    message: internal error
+                    code: 13
+          queryParameters:
+            assetTypes:
+              required: false
+              type: array
+              items:
+                type: string
+                enum:
+                  - USD
+                  - BTC
+                  - ETH
+                  - PAX
+                  - PAXG
+                  - UNALLOCATED_GOLD
+                  - ALLOCATED_GOLD
+                  - BUSD
+                  - HUSD
+              (oas-collectionFormat): multi
+          securedBy:
+            - Payment&Solutions_Test_auth:
+                scopes:
+                  - 'funding:read_profile'
+          (oas-summary): |-
+            Read customer balances for a specific profile
+            id is one of [uuid, "summary", "default"]
+          (oas-tags):
+            - FundingPublic
+      /instructions:
+        get:
+          displayName: GetProfileDepositInstructions
+          responses:
+            '200':
+              description: A successful response.
+              body:
+                application/json:
+                  type: ProfileDepositInstructions
+            '401':
+              description: Unauthenticated
+              body:
+                application/json:
+                  example:
+                    error: no authorization found on context metadata
+                    message: no authorization found on context metadata
+                    code: 16
+            '403':
+              description: Permission Denied
+              body:
+                application/json:
+                  example:
+                    error: not provisioned
+                    message: not provisioned
+                    code: 7
+            '500':
+              description: Internal
+              body:
+                application/json:
+                  example:
+                    error: internal error
+                    message: internal error
+                    code: 13
+          securedBy:
+            - Payment&Solutions_Test_auth:
+                scopes:
+                  - 'funding:read_profile'
+          (oas-summary): Returns wire deposit instructions for the given profile.
+          (oas-tags):
+            - FundingPublic
+  /sen-withdrawals&oik:
+    post:
+      displayName: CreateSenWithdrawal
+      responses:
+        '200':
+          description: A successful response.
+          body:
+            application/json:
+              type: CreateSenWithdrawalResponse
+        '400':
+          description: Invalid Argument
+          body:
+            application/json:
+              example:
+                error: profileId must be set
+                message: profileId must be set
+                code: 3
+        '401':
+          description: Unauthenticated
+          body:
+            application/json:
+              example:
+                error: no authorization found on context metadata
+                message: no authorization found on context metadata
+                code: 16
+        '403':
+          description: Permission Denied
+          body:
+            application/json:
+              example:
+                error: not provisioned
+                message: not provisioned
+                code: 7
+        '404':
+          description: Not Found
+          body:
+            application/json:
+              example:
+                error: no saved account exists with ID 0cf361e1-4b44-483d-a159-54dabdf7e814
+                message: no saved account exists with ID 0cf361e1-4b44-483d-a159-54dabdf7e814
+                code: 5
+        '409':
+          description: Already Exists
+          body:
+            application/json:
+              example:
+                error: 'activity already exists with id: 0cf361e1-4b44-483d-a159-54dabdf7e814'
+                message: 'activity already exists with id: 0cf361e1-4b44-483d-a159-54dabdf7e814'
+                code: 6
+        '500':
+          description: Internal
+          body:
+            application/json:
+              example:
+                error: internal error
+                message: internal error
+                code: 13
+      body:
+        application/json:
+          type: CreateSenWithdrawalRequest
+          (oas-body-name): body
+      securedBy:
+        - Payment&Solutions_Test_auth:
+            scopes:
+              - 'funding:withdraw_fiat'
+      (oas-summary): Request a withdrawal from a balance at Payment&Solutions_Test through SEN.
+      (oas-tags):
+        - FundingPublic
+  /wire-withdrawals:
+    post:
+      displayName: CreateWireWithdrawal
+      responses:
+        '200':
+          description: A successful response.
+          body:
+            application/json:
+              type: CreateWireWithdrawalResponse
+        '400':
+          description: Invalid Argument
+          body:
+            application/json:
+              example:
+                error: profileId must be set
+                message: profileId must be set
+                code: 3
+        '401':
+          description: Unauthenticated
+          body:
+            application/json:
+              example:
+                error: no authorization found on context metadata
+                message: no authorization found on context metadata
+                code: 16
+        '403':
+          description: Permission Denied
+          body:
+            application/json:
+              example:
+                error: not provisioned
+                message: not provisioned
+                code: 7
+        '404':
+          description: Not Found
+          body:
+            application/json:
+              example:
+                error: no saved account exists with ID 0cf361e1-4b44-483d-a159-54dabdf7e814
+                message: no saved account exists with ID 0cf361e1-4b44-483d-a159-54dabdf7e814
+                code: 5
+        '409':
+          description: Already Exists
+          body:
+            application/json:
+              example:
+                error: 'activity already exists with id: 0cf361e1-4b44-483d-a159-54dabdf7e814'
+                message: 'activity already exists with id: 0cf361e1-4b44-483d-a159-54dabdf7e814'
+                code: 6
+        '500':
+          description: Internal
+          body:
+            application/json:
+              example:
+                error: internal error
+                message: internal error
+                code: 13
+      body:
+        application/json:
+          type: CreateWireWithdrawalRequest
+          (oas-body-name): body
+      securedBy:
+        - Payment&Solutions_Test_auth:
+            scopes:
+              - 'funding:withdraw_fiat'
+      (oas-summary): Request a withdrawal from a balance at Payment&Solutions_Test through ABA or SWIFT.
+      (oas-tags):
+        - FundingPublic
+  '/bank-account/{id}':
+    uriParameters:
+      id:
+        type: string
+    '/auto-conversion-instructions/{targetAsset}':
+      get:
+        displayName: GetBankAccountAutoConversionInstructions
+        responses:
+          '200':
+            description: A successful response.
+            body:
+              application/json:
+                type: GetBankAccountAutoConversionInstructionsResponse
+          '400':
+            description: Invalid Argument
+            body:
+              application/json:
+                example:
+                  error: invalid customer bank account id abc
+                  message: invalid customer bank account id abc
+                  code: 3
+          '401':
+            description: Unauthenticated
+            body:
+              application/json:
+                example:
+                  error: no authorization found on context metadata
+                  message: no authorization found on context metadata
+                  code: 16
+          '403':
+            description: Permission Denied
+            body:
+              application/json:
+                example:
+                  error: not provisioned
+                  message: not provisioned
+                  code: 7
+          '500':
+            description: Internal
+            body:
+              application/json:
+                example:
+                  error: internal error
+                  message: internal error
+                  code: 13
+        securedBy:
+          - Payment&Solutions_Test_auth:
+              scopes:
+                - 'funding:read_bank_account'
+        (oas-summary): Returns a specific Payment&Solutions_Test-issued deposit address. This address is associated with the bank account where the customer wants their funds sent. Tokens sent to this address will be automatically converted to USD and sent to the corresponding bank account of the customer. Each bank account saved by the user will be assigned its own unique redemption address.
+        (oas-tags):
+          - FundingPublic
+      uriParameters:
+        targetAsset:
+          type: string
+          enum:
+            - USD
+            - BTC
+            - ETH
+            - PAX
+            - PAXG
+            - UNALLOCATED_GOLD
+            - ALLOCATED_GOLD
+            - BUSD
+            - HUSD
+  /customer/status&rep:
+    get:
+      displayName: GetCustStatus
+      responses:
+        '200':
+          description: A successful response.
+          body:
+            application/json:
+              type: GetCustStatusResponse
+      securedBy:
+        - Payment&Solutions_Test_auth:
+            scopes:
+              - 'kyc:read_customer_status'
+      (oas-summary): Returns information on how far the customer's onboarding has progressed at Payment&Solutions_Test.
+      (oas-tags):
+        - CustomerPublic
